@@ -4,9 +4,10 @@ Serial uart;
 int theKey;
 String theBuf;
 int theSize = 8;
-int theScale = 64;
+int theScale = 128;
 float[][] theBitmap = new float[8][8];
-float theTemp = 27.0;
+float theTemp = 22.0;
+float theAdj = 50;
 
 int state = 0;
 
@@ -16,7 +17,7 @@ void setup(){
 //  textFont(font);
   textSize(24);
   
-  String uartName = Serial.list()[0];
+  String uartName = Serial.list()[1];
   uart = new Serial(this, uartName, 115200);
   uart.bufferUntil('\n');
 }
@@ -30,18 +31,20 @@ void draw(){
       float b = 0;
       float g = 0;
       if(temp > theTemp){
-        r = sqrt(temp - theTemp) * 24;
+        r = sqrt(temp - theTemp) * theAdj;
       } else if(temp < theTemp){
-        b = sqrt(theTemp - temp) * 24;
+        b = sqrt(theTemp - temp) * theAdj;
       }
       stroke(r,g,b);
       fill(r,g,b);
-      rect(i*theScale,j*theScale,theScale,theScale);
+      //rect(i*theScale,j*theScale,theScale,theScale);
+      rect(i*theScale,(theSize -1  - j)*theScale,theScale,theScale);
       stroke(255);
       fill(255);
       
       // uncomment this line for celcius display
-      text(int(temp), (i+0.1)*theScale,(j+0.5)*theScale);
+      //text(int(temp), (i+0.1)*theScale,(j+0.5)*theScale);
+      text(int(temp), (i+0.1)*theScale,((theSize -1  - j)+0.5)*theScale);
       // uncomment this line for farenheit display
 //      text(int(1.8*temp+32), (i+0.1)*theScale,(j+0.85)*theScale);
     }
