@@ -2,7 +2,7 @@
 
 byte pixelTempL;
 byte pixelTempH;
-char addr = 0x68;
+char addr = 0x69;
 float celsius;
 float aveTemp;
 
