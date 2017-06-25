@@ -11,14 +11,18 @@ float theAdj = 75;
 float min = 0xffff;
 float max = 0;
 float ave = 0;
+int max_x;
+int max_y;
 
 int state = 0;
 
 void setup() {
   size(theSize*theScale, theSize*theScale);
   textSize(24);
-
+  
+  print(Serial.list());
   String uartName = Serial.list()[1];   // <-- may have to modiy this depending on the com port of the board 
+  print("\n\rSelected:" + uartName);
   uart = new Serial(this, uartName, 115200);
   uart.bufferUntil('\n');
 }
@@ -27,6 +31,8 @@ void draw() {
 
   min = 0xffff;
   max = 0;
+
+  
   ave = 0;
   for (int i=0; i<theSize; i++) {
     for (int j=0; j<theSize; j++) {
@@ -38,6 +44,8 @@ void draw() {
       if (theBitmap[i][j] > max)
       {
         max = theBitmap[i][j];
+        max_x = i;
+        max_y = j;
       }
     }
   }
@@ -70,13 +78,23 @@ void draw() {
       text(int(temp), (i+0.1)*theScale, ((theSize -1  - j)+0.5)*theScale);
       // uncomment this line for farenheit display
       //      text(int(1.8*temp+32), (i+0.1)*theScale,(j+0.85)*theScale);
+      
+      if((i == max_x) && (j==max_y))
+      {
+      stroke(255, 255, 0);
+      fill(255, 255, 0);
+      rect(i*theScale, (theSize -1  - j)*theScale, theScale, theScale);
+      stroke(0);
+      fill(0);
+      text(int(temp), (i+0.1)*theScale, ((theSize -1  - j)+0.5)*theScale);
+      }
     }
   }
 }
 
 void serialEvent(Serial port) {
   theBuf = trim(port.readString());
-  //  println(theBuf);
+    println(theBuf);
   if (theBuf.length() == 9) {
     if (theBuf.equals("Grid-EYE:")) state = 1;
   } else if (state > 0 && state <= 8) {
