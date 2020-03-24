@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <fcntl.h>
+#include <math.h>
 #include <sys/ioctl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -108,7 +109,13 @@ void main()
     uint8_t buffer[64];
     int pixel;
     signed short image[64];
+    signed short average[64];
     float temperature[64];
+
+    for (i = 0; i < 64; i++)
+    {
+        average[i] = 80;
+    }
 
     i2c_init();
 
@@ -126,6 +133,8 @@ void main()
                 image[i] = image[i] - 4096;
             }
             temperature[i] = image[i] * .25;
+
+            average[i] = (average[i] * 9 + image[i]) / 10;
         }
 
         printf("\033[H\033[J"); //clear screen
@@ -135,7 +144,7 @@ void main()
             for (j = 7; j >= 0; j--)
             {
                 pixel = image[i * 8 + j];
-                printf("%*d ",3, pixel);
+                printf("%*d ", 3, pixel);
             }
             printf("\n");
         }
@@ -146,6 +155,36 @@ void main()
             for (j = 7; j >= 0; j--)
             {
                 printf("%6.2f ", temperature[i * 8 + j]);
+            }
+            printf("\n");
+        }
+
+        printf("\nBackground Subtraction\n");
+        for (i = 0; i < 8; i++)
+        {
+            for (j = 7; j >= 0; j--)
+            {
+                pixel = (image[i * 8 + j] - average[i * 8 + j]);
+                printf("%*d ", 3, pixel);
+            }
+            printf("\n");
+        }
+
+        printf("\nDemo\n");
+        for (i = 0; i < 8; i++)
+        {
+            for (j = 7; j >= 0; j--)
+            {
+                pixel = (image[i * 8 + j] - average[i * 8 + j]);
+                if((pixel) > 10)
+                {
+                    printf("%*d ", 3, image[i * 8 + j]);
+                }
+                else
+                {
+                    printf("    ");
+                }
+                
             }
             printf("\n");
         }
