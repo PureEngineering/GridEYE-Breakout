@@ -26,7 +26,7 @@ int i2c_init(void)
     if ((i2c_fd = open(i2c_fname, O_RDWR)) < 0)
     {
         char err[200];
-        sprintf(err, "open('%s') in i2c_init, (modify i2c_fname)", i2c_fname);
+        sprintf(err, "open('%s') in i2c_init, (modify i2c_fname in source)", i2c_fname);
         perror(err);
         return -1;
     }
@@ -117,7 +117,10 @@ void main()
         average[i] = 80;
     }
 
-    i2c_init();
+    if(i2c_init()<0)
+    {
+        exit(1);
+    }
 
     while (1)
     {
