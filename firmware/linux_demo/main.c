@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <fcntl.h>
+#include <unistd.h>
 #include <math.h>
 #include <sys/ioctl.h>
 #include <sys/types.h>
@@ -16,7 +17,7 @@
 // Global file descriptor used to talk to the I2C bus:
 int i2c_fd = -1;
 // device name for the I2C bus
-const char *i2c_fname = "/dev/i2c-7";
+const char *i2c_fname = "/dev/i2c-17";
 
 #define I2C_SLAVE_ADDR 0x69
 
@@ -111,16 +112,20 @@ void main()
     signed short image[64];
     signed short average[64];
     float temperature[64];
+    float max_temperature = 0;
+    float min_temperature = 99e99;
 
     for (i = 0; i < 64; i++)
     {
         average[i] = 80;
     }
 
-    if(i2c_init()<0)
+    if (i2c_init() < 0)
     {
         exit(1);
     }
+
+    i2c_write(I2C_SLAVE_ADDR, 0x01, 0x30); //full reset
 
     while (1)
     {
@@ -152,15 +157,27 @@ void main()
             printf("\n");
         }
 
+        max_temperature = 0;
+        min_temperature = 99e99;
         printf("\nTemperature\n");
         for (i = 0; i < 8; i++)
         {
             for (j = 7; j >= 0; j--)
             {
                 printf("%6.2f ", temperature[i * 8 + j]);
+                if (temperature[i * 8 + j] > max_temperature)
+                {
+                    max_temperature = temperature[i * 8 + j];
+                }
+                if (temperature[i * 8 + j] < min_temperature)
+                {
+                    min_temperature = temperature[i * 8 + j];
+                }
             }
             printf("\n");
         }
+
+        printf("\nMax Temperature: %6.2f C (%6.2f F)    Min Temperature: %6.2f C (%6.2f F) \n", max_temperature, max_temperature * 9 / 5, min_temperature, min_temperature * 9 / 5);
 
         printf("\nBackground Subtraction\n");
         for (i = 0; i < 8; i++)
@@ -179,7 +196,7 @@ void main()
             for (j = 7; j >= 0; j--)
             {
                 pixel = (image[i * 8 + j] - average[i * 8 + j]);
-                if((pixel) > 10)
+                if ((pixel) > 10)
                 {
                     printf("%*d ", 3, image[i * 8 + j]);
                 }
@@ -187,9 +204,9 @@ void main()
                 {
                     printf("    ");
                 }
-                
             }
             printf("\n");
         }
+        usleep(110 * 1000);
     }
 }
