@@ -125,8 +125,9 @@ void main()
         exit(1);
     }
 
-    i2c_write(I2C_SLAVE_ADDR, 0x01, 0x30); //full reset
+    i2c_write(I2C_SLAVE_ADDR, 0x01, 0x3f); //full reset
 
+    i2c_write(I2C_SLAVE_ADDR, 0x07, 1<<5); //enable twice moving average 
     while (1)
     {
 
